@@ -9,3 +9,4 @@ export interface IConsultarProceso {
     readonly quantumConsumido: number;
     readonly tiempoBloqueoRestante: number;
 }
+

@@ -37,5 +37,8 @@ export class Proceso implements IProceso {
     }
 
     public ejecutarUnTick(): void {
+
+        this.cpuRestante = Math.max(0, this.cpuRestante - 1);
+        this.quantumConsumido = this.quantumConsumido + 1;
     }
 }

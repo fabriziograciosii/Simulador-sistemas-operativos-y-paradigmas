@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { Proceso } from '../src/procesos/Proceso';
+import { EstadoProceso } from '../src/procesos/EstadoProceso';
 
 describe('Entidad Proceso - Inicializacion', () => {
     test('Debe guardar el PID, la memoria requerida y la CPU total al crearse', () => {

@@ -52,4 +52,15 @@ export class Proceso implements IProceso {
 
         return pidValido && memoriaValida && cpuValido;
     }
+
+    cambiarEstado(nuevoEstado: EstadoProceso): void {
+        this.estado = nuevoEstado;
+    }
+
+    ejecutarUnTick(): void {
+        this.cpuRestante = Math.max(0, this.cpuRestante - 1);
+        this.quantumConsumido = this.quantumConsumido + 1;
+    }
+
+
 }

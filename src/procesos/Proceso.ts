@@ -43,4 +43,13 @@ export class Proceso implements IProceso {
     getQuantumConsumido(): number {
         return this.quantumConsumido;
     }
+
+    esValido(): boolean {
+ 
+        const pidValido = this.pid > 0 && this.pid % 1 === 0;
+        const memoriaValida = this.memoriaRequerida > 0 && this.memoriaRequerida % 1 === 0;
+        const cpuValido = this.cpuTotal > 0 && this.cpuTotal % 1 === 0;
+
+        return pidValido && memoriaValida && cpuValido;
+    }
 }

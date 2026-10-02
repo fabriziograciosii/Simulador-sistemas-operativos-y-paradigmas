@@ -7,4 +7,5 @@ export interface IProceso {
     getCpuRestante(): number;
     getEstado(): EstadoProceso;
     getQuantumConsumido(): number;
+    esValido():boolean;
 }

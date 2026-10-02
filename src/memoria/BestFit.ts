@@ -10,7 +10,7 @@ export class BestFit implements IBuscarHueco {
             
             const esCandidatoValido = bloque.estaLibre() && bloque.getTamano() >= tamanoRequerido;
             
-            const esElMasAjustado = mejorBloque === null || bloque.getTamano() < mejorBloque.getTamano();
+            const esElMasAjustado: boolean = mejorBloque === null ? true : bloque.getTamano() < mejorBloque.getTamano();
 
             mejorBloque = (esCandidatoValido && esElMasAjustado) ? bloque : mejorBloque;
         }

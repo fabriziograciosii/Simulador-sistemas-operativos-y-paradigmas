@@ -29,4 +29,14 @@ export class BloqueMemoria implements IBloqueMemoria {
     getProceso(): IProceso | null {
         return this.proceso;
     }
+    
+    asignarProceso(proceso: IProceso): void {
+        this.proceso = proceso;
+        this.libre = false;
+    }
+
+    liberar(): void {
+        this.proceso = null;
+        this.libre = true;
+    }
 }

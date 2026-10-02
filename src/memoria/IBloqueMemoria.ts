@@ -7,4 +7,5 @@ export interface IBloqueMemoria {
     getProceso(): IProceso | null;
     asignarProceso(proceso: IProceso): void;
     liberar(): void;
+    dividir(tamanoRequerido:number): IBloqueMemoria | null;
 }

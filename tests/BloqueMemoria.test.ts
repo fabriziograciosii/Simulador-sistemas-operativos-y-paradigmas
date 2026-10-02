@@ -37,3 +37,26 @@ describe('Entidad BloqueMemoria - Comportamiento (RF04 y RF05)', () => {
         expect(bloque.getProceso()).toBe(null);
     });
 });
+
+describe('Entidad BloqueMemoria - Particion (RF04)', () => {
+    test('Debe dividirse y retornar un nuevo bloque libre si sobra espacio', () => {
+        const bloque = new BloqueMemoria(0, 1024);
+        const nuevoBloqueSobrante = bloque.dividir(200);
+
+        expect(bloque.getTamano()).toBe(200);
+        
+        expect(nuevoBloqueSobrante).not.toBeNull();
+        expect(nuevoBloqueSobrante?.getInicio()).toBe(200);
+        expect(nuevoBloqueSobrante?.getTamano()).toBe(824);
+        expect(nuevoBloqueSobrante?.estaLibre()).toBe(true);
+    });
+
+    test('No debe dividirse ni retornar nada si la asignacion es exacta', () => {
+        const bloque = new BloqueMemoria(0, 1024);
+        
+        const nuevoBloqueSobrante = bloque.dividir(1024);
+
+        expect(bloque.getTamano()).toBe(1024);
+        expect(nuevoBloqueSobrante).toBeNull(); 
+    });
+});

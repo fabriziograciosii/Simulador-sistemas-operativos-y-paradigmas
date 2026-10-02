@@ -3,7 +3,7 @@ import { IBloqueMemoria } from './IBloqueMemoria';
 
 export class BloqueMemoria implements IBloqueMemoria {
     private readonly inicio: number;
-    private readonly tamano: number;
+    private  tamano: number;
     private libre: boolean;
     private proceso: IProceso | null;
 
@@ -39,4 +39,15 @@ export class BloqueMemoria implements IBloqueMemoria {
         this.proceso = null;
         this.libre = true;
     }
+
+    dividir(tamanoRequerido: number): IBloqueMemoria | null {
+        const sobrante = this.tamano - tamanoRequerido;
+        
+        this.tamano = tamanoRequerido;
+        
+        return sobrante > 0 
+            ? new BloqueMemoria(this.inicio + tamanoRequerido, sobrante) 
+            : null;
+    }
+    
 }

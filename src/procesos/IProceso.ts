@@ -1,8 +1,13 @@
 import { EstadoProceso } from './EstadoProceso';
-import { IConsultarProceso } from './IConsultarProceso';
 
 export interface IProceso {
-    obtenerVista(): IConsultarProceso;
+    getPid(): number;
+    getMemoriaRequerida(): number;
+    getCpuTotal(): number;
+    getCpuRestante(): number;
+    getEstado(): EstadoProceso;
+    getQuantumConsumido(): number;
+    
     cambiarEstado(nuevoEstado: EstadoProceso): void;
     ejecutarUnTick(): void;
 }

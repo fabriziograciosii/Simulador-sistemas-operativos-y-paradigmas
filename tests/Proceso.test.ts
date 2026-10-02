@@ -37,7 +37,7 @@ describe('Entidad Proceso - Inicializacion', () => {
         expect(proceso.getEstado()).toBe(EstadoProceso.LISTO);
     });
 
-    test('Debe ejecutar un tick descontando CPU y sumando quantum (sin usar if)', () => {
+    test('Debe ejecutar un tick descontando CPU y sumando quantum ', () => {
         
         const proceso = new Proceso(2, 100, 2);
         

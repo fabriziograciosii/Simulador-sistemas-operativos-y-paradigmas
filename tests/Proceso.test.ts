@@ -27,5 +27,15 @@ describe('Entidad Proceso', () => {
         expect(proceso.getCpuRestante()).toBe(0); 
     });
 
-    
+    test('Debe cambiar su estado correctamente', () => {
+        const proceso = new Proceso(3, 50, 10);
+        
+        proceso.cambiarEstado(EstadoProceso.LISTO);
+        expect(proceso.getEstado()).toBe(EstadoProceso.LISTO);
+
+        proceso.cambiarEstado(EstadoProceso.EJECUTANDO);
+        expect(proceso.getEstado()).toBe(EstadoProceso.EJECUTANDO);
+    });
+
+
 });

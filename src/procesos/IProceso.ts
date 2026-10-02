@@ -8,4 +8,6 @@ export interface IProceso {
     getEstado(): EstadoProceso;
     getQuantumConsumido(): number;
     esValido():boolean;
+    cambiarEstado(nuevoEstado: EstadoProceso): void;
+    ejecutarUnTick(): void;
 }

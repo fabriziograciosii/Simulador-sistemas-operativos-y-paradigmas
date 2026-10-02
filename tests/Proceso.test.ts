@@ -26,5 +26,31 @@ describe('Entidad Proceso - Inicializacion', () => {
     test('Debe rechazar procesos con valores decimales usando matematica basica', () => {
         expect(new Proceso(1.5, 200, 5).esValido()).toBe(false); 
     });
+
+    describe('Entidad Proceso - Comportamiento', () => {
+    test('Debe cambiar su estado correctamente', () => {
+        const proceso = new Proceso(1, 100, 5);
+        
+        proceso.cambiarEstado(EstadoProceso.LISTO);
+        
+        expect(proceso.getEstado()).toBe(EstadoProceso.LISTO);
+    });
+
+    test('Debe ejecutar un tick descontando CPU y sumando quantum (sin usar if)', () => {
+        
+        const proceso = new Proceso(2, 100, 2);
+        
+        proceso.ejecutarUnTick(); 
+        expect(proceso.getCpuRestante()).toBe(1); 
+        expect(proceso.getQuantumConsumido()).toBe(1); 
+
+        proceso.ejecutarUnTick(); 
+        expect(proceso.getCpuRestante()).toBe(0); 
+        expect(proceso.getQuantumConsumido()).toBe(2); 
+
+        proceso.ejecutarUnTick(); 
+        expect(proceso.getCpuRestante()).toBe(0); 
+    });
+});
 });
 });

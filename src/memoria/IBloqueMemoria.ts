@@ -5,4 +5,6 @@ export interface IBloqueMemoria {
     getTamano(): number;
     estaLibre(): boolean;
     getProceso(): IProceso | null;
+    asignarProceso(proceso: IProceso): void;
+    liberar(): void;
 }

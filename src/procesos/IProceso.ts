@@ -7,7 +7,4 @@ export interface IProceso {
     getCpuRestante(): number;
     getEstado(): EstadoProceso;
     getQuantumConsumido(): number;
-    
-    cambiarEstado(nuevoEstado: EstadoProceso): void;
-    ejecutarUnTick(): void;
 }

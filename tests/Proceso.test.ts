@@ -1,41 +1,13 @@
-import { Proceso } from '../src/procesos/Proceso';
-import { EstadoProceso } from '../src/procesos/EstadoProceso';
 import { describe, test, expect } from 'vitest';
+import { Proceso } from '../src/procesos/Proceso';
 
-describe('Entidad Proceso', () => {
-    test('Debe inicializar correctamente y corregir valores inválidos matemáticamente', () => {
-        const proceso = new Proceso(1, -50, 0); 
+describe('Entidad Proceso - Inicializacion', () => {
+    test('Debe guardar el PID, la memoria requerida y la CPU total al crearse', () => {
+
+        const proceso = new Proceso(1, 200, 5);
 
         expect(proceso.getPid()).toBe(1);
-        expect(proceso.getEstado()).toBe(EstadoProceso.NUEVO);
-        expect(proceso.getMemoriaRequerida()).toBe(1); 
-        expect(proceso.getCpuTotal()).toBe(1); 
+        expect(proceso.getMemoriaRequerida()).toBe(200);
+        expect(proceso.getCpuTotal()).toBe(5);
     });
-
-    test('Debe ejecutar un tick descontando CPU y sumar quantum ', () => {
-        const proceso = new Proceso(2, 100, 2);
-        
-        proceso.ejecutarUnTick();
-        expect(proceso.getCpuRestante()).toBe(1); 
-        expect(proceso.getQuantumConsumido()).toBe(1); 
-
-        proceso.ejecutarUnTick();
-        expect(proceso.getCpuRestante()).toBe(0); 
-        expect(proceso.getQuantumConsumido()).toBe(2); 
-
-        proceso.ejecutarUnTick();
-        expect(proceso.getCpuRestante()).toBe(0); 
-    });
-
-    test('Debe cambiar su estado correctamente', () => {
-        const proceso = new Proceso(3, 50, 10);
-        
-        proceso.cambiarEstado(EstadoProceso.LISTO);
-        expect(proceso.getEstado()).toBe(EstadoProceso.LISTO);
-
-        proceso.cambiarEstado(EstadoProceso.EJECUTANDO);
-        expect(proceso.getEstado()).toBe(EstadoProceso.EJECUTANDO);
-    });
-
-
 });

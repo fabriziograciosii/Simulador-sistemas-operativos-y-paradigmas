@@ -1,0 +1,43 @@
+import { IGestorMemoria } from './IGestorMemoria';
+import { IBuscarHueco } from './IBuscarHueco';
+import { IBloqueMemoria } from './IBloqueMemoria';
+import { BloqueMemoria } from './BloqueMemoria';
+import { IProceso } from '../procesos/IProceso';
+
+export class GestorMemoria implements IGestorMemoria {
+    private bloques: IBloqueMemoria[];
+    private algoritmo: IBuscarHueco; 
+
+    constructor(tamanoTotal: number, algoritmo: IBuscarHueco) {
+
+        this.bloques = [new BloqueMemoria(0, tamanoTotal)];
+        this.algoritmo = algoritmo;
+    }
+
+    asignarMemoria(proceso: IProceso): boolean {
+
+        const bloqueElegido = this.algoritmo.buscarBloque(this.bloques, proceso.getTamano());
+
+
+        const sobrante = bloqueElegido !== null ? bloqueElegido.dividir(proceso.getTamano()) : null;
+
+
+        sobrante !== null ? this.bloques.push(sobrante) : null;
+
+
+        bloqueElegido !== null ? bloqueElegido.asignarProceso(proceso) : null;
+        
+
+        return bloqueElegido !== null;
+    }
+
+    liberarMemoria(proceso: IProceso): void {
+
+        for (let i = 0; i < this.bloques.length; i++) {
+            const bloque = this.bloques[i];
+            const esElBloqueDelProceso = bloque.getProceso() === proceso;
+            
+            esElBloqueDelProceso ? bloque.liberar() : null;
+        }
+    }
+}

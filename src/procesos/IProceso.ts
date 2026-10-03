@@ -10,4 +10,5 @@ export interface IProceso {
     esValido():boolean;
     cambiarEstado(nuevoEstado: EstadoProceso): void;
     ejecutarUnTick(): void;
+    getTamano(): number;
 }

@@ -62,5 +62,9 @@ export class Proceso implements IProceso {
         this.quantumConsumido = this.quantumConsumido + 1;
     }
 
+    public getTamano(): number {
+        return this.memoriaRequerida;
+    }
+
 
 }

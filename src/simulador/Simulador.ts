@@ -77,5 +77,30 @@ export class Simulador implements ISimulador {
         (cpuLibre && hayListos) ? this.despacharSiguienteProceso() : undefined;
     }
 
+    private finalizarProcesoActual(proceso: IProceso): void {
+        this.procesador.liberarProcesador();
+        proceso.cambiarEstado(EstadoProceso.TERMINADO);
+        this.procesosTerminados = [...this.procesosTerminados, proceso];
+        // Tal cual pide el Excel: al terminar, libera memoria
+        this.gestorMemoria.liberarMemoria(proceso.getPid());
+    }
+
+    private rotarProcesoActual(proceso: IProceso): void {
+        this.procesador.liberarProcesador();
+        proceso.cambiarEstado(EstadoProceso.LISTO);
+        // Round Robin: Vuelve al final de la cola de Listos
+        this.procesosListos = [...this.procesosListos, proceso];
+    }
+
+    private despacharSiguienteProceso(): void {
+        const siguiente = this.procesosListos[0];
+        
+        this.procesador.asignarProceso(siguiente);
+        siguiente.cambiarEstado(EstadoProceso.EJECUTANDO);
+        
+        // Lo sacamos de la cola de listos (avanzan todos un lugar)
+        this.procesosListos = this.procesosListos.slice(1);
+    }
+
     
 }

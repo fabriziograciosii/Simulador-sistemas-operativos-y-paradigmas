@@ -9,4 +9,9 @@ export interface ISimulador {
     getProcesosListos(): IProceso[];
     getProcesosBloqueados(): IProceso[];
     getProcesosTerminados(): IProceso[];
+
+    getPorcentajeUsoCPU(): number;
+    getCambiosDeContexto(): number;
+    getFragmentacionExterna(): number;
+
 }

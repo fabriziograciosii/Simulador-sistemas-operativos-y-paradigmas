@@ -58,4 +58,39 @@ describe('Batería Exhaustiva de Pruebas AE2 - Simulador OS', () => {
         });
     });
 
+    describe('3. Admisión y Asignación de Memoria (Best-Fit)', () => {
+        test('Procesos que superan la memoria libre quedan retenidos en Esperando', () => {
+            // creamos una memoria chica de 500kb
+            const simulador = new Simulador(new GestorMemoria(500, new BestFit()), new Procesador(), new RoundRobin(2));
+            
+            simulador.agregarProceso(new Proceso(1, 400, 5)); // este entra
+            simulador.agregarProceso(new Proceso(2, 200, 5)); // este rebota por falta de espacio
+            
+            simulador.ejecutarReloj();
+
+            // validamos que el p2 quede trabado esperando ram
+            expect(simulador.getProcesosEsperandoMemoria().length).toBe(1);
+            expect(simulador.getProcesosEsperandoMemoria()[0].getPid()).toBe(2);
+        });
+
+        test('Admite procesos pequeños aunque uno grande esté esperando (Evita Deadlock)', () => {
+            const simulador = new Simulador(new GestorMemoria(500, new BestFit()), new Procesador(), new RoundRobin(2));
+            
+            // p1 entra y sobran 100kb
+            simulador.agregarProceso(new Proceso(1, 400, 5)); 
+            // p2 necesita 300kb asi que tiene que esperar
+            simulador.agregarProceso(new Proceso(2, 300, 5)); 
+            // p3 entra justo en el hueco de 100kb
+            simulador.agregarProceso(new Proceso(3, 50, 5));  
+
+            simulador.ejecutarReloj();
+
+            // verificamos que p2 siga esperando pero p3 haya pasado
+            expect(simulador.getProcesosEsperandoMemoria().length).toBe(1);
+            expect(simulador.getProcesosEsperandoMemoria()[0].getPid()).toBe(2); 
+            expect(simulador.getProcesosListos().length).toBe(1);
+            expect(simulador.getProcesosListos()[0].getPid()).toBe(3);
+        });
+    });
+
 });

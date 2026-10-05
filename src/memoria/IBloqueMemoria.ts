@@ -8,4 +8,5 @@ export interface IBloqueMemoria {
     asignarProceso(proceso: IProceso): void;
     liberar(): void;
     dividir(tamanoRequerido:number): IBloqueMemoria | null;
+    expandir(tamanoAdicional:number): void;
 }

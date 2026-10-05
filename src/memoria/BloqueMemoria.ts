@@ -49,5 +49,9 @@ export class BloqueMemoria implements IBloqueMemoria {
             ? new BloqueMemoria(this.inicio + tamanoRequerido, sobrante) 
             : null;
     }
+
+    public expandir(tamanoAdicional: number): void {
+        this.tamano += tamanoAdicional;
+    }
     
 }

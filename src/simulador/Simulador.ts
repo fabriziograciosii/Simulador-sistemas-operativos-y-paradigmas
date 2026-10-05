@@ -94,19 +94,30 @@ export class Simulador implements ISimulador {
 
         const termino = actual !== null && actual.getCpuRestante() === 0;
         const agotoQuantum = actual !== null && !termino && actual.getQuantumConsumido() >= this._planificador.getQuantum();
-        const hayListos = this._procesosListos.length > 0;
+        
+        // Verificamos si el proceso solicita bloqueo por E/S
+        const pideBloqueo = actual !== null && !termino && actual.getEventoES() !== null && (actual.getCpuTotal() - actual.getCpuRestante()) === actual.getEventoES()?.getTickDisparo();
 
-        // Solo rotamos si agotó el tiempo Y ADEMÁS hay alguien esperando
+        const hayListos = this._procesosListos.length > 0;
         const debeRotar = agotoQuantum && hayListos;
 
         termino ? this.finalizarProcesoActual(actual as IProceso) : undefined;
+        pideBloqueo ? this.bloquearProcesoActual(actual as IProceso) : undefined;
         debeRotar ? this.rotarProcesoActual(actual as IProceso) : undefined;
         
-        // Re-evaluamos la CPU después de limpiar
         const cpuLibre = this._procesador.estaLibre();
         const hayListosAhora = this._procesosListos.length > 0;
 
         (cpuLibre && hayListosAhora) ? this.despacharSiguienteProceso() : undefined;
+    }
+
+    private bloquearProcesoActual(proceso: IProceso): void {
+        this._cambiosDeContexto++; // Un bloqueo cuenta como cambio de contexto según RF09
+        this._procesador.liberarProcesador();
+        proceso.cambiarEstado(EstadoProceso.BLOQUEADO);
+        const evento = proceso.getEventoES();
+        evento !== null ? proceso.iniciarBloqueo(evento.getDuracion()) : undefined;
+        this._procesosBloqueados = [...this._procesosBloqueados, proceso];
     }
 
     private finalizarProcesoActual(proceso: IProceso): void {

@@ -52,11 +52,17 @@ export class GestorMemoria implements IGestorMemoria {
 
     public getMayorHuecoLibre(): number {
         let mayor = 0;
+        let huecoContiguo = 0;
+        
         for (let i = 0; i < this.bloques.length; i++) {
             const libre = this.bloques[i].estaLibre();
             const tamano = this.bloques[i].getTamano();
             
-            mayor = (libre && tamano > mayor) ? tamano : mayor;
+            // Si está libre, lo acumulamos con el anterior. Si no, cortamos la racha (vuelve a 0)
+            huecoContiguo = libre ? huecoContiguo + tamano : 0;
+            
+            // Actualizamos el récord del mayor hueco encontrado
+            mayor = huecoContiguo > mayor ? huecoContiguo : mayor;
         }
         return mayor;
     }

@@ -1,20 +1,31 @@
 import { EstadoProceso } from './EstadoProceso';
 import { IProceso } from './IProceso';
-import { EventoES } from './EventoES';
+import { IEventoES } from './IEventoES';
+import { Reglas } from '../comun/Reglas';
 
 export class Proceso implements IProceso {
+    // Transiciones permitidas del modelo de seis estados. Cualquier otra se rechaza.
+    private static readonly TRANSICIONES: Record<EstadoProceso, EstadoProceso[]> = {
+        [EstadoProceso.NUEVO]: [EstadoProceso.ESPERANDO_MEMORIA],
+        [EstadoProceso.ESPERANDO_MEMORIA]: [EstadoProceso.LISTO],
+        [EstadoProceso.LISTO]: [EstadoProceso.EJECUTANDO],
+        [EstadoProceso.EJECUTANDO]: [EstadoProceso.LISTO, EstadoProceso.BLOQUEADO, EstadoProceso.TERMINADO],
+        [EstadoProceso.BLOQUEADO]: [EstadoProceso.LISTO],
+        [EstadoProceso.TERMINADO]: []
+    };
+
     private readonly pid: number;
     private readonly memoriaRequerida: number;
     private readonly cpuTotal: number;
+    private readonly eventoES: IEventoES | null;
     
     private estado: EstadoProceso;
     private cpuRestante: number;
     private quantumConsumido: number;
-    private eventoES: EventoES | null = null;
     private bloqueoRestante: number = 0;
     private yaSeBloqueo: boolean = false;
 
-    constructor(pid: number, memoriaRequerida: number, cpuTotal: number, eventoES: EventoES | null = null) {
+    constructor(pid: number, memoriaRequerida: number, cpuTotal: number, eventoES: IEventoES | null = null) {
         this.pid = pid;
         this.memoriaRequerida = memoriaRequerida;
         this.cpuTotal = cpuTotal;
@@ -50,15 +61,17 @@ export class Proceso implements IProceso {
     }
 
     esValido(): boolean {
- 
-        const pidValido = this.pid > 0 && this.pid % 1 === 0;
-        const memoriaValida = this.memoriaRequerida > 0 && this.memoriaRequerida % 1 === 0;
-        const cpuValido = this.cpuTotal > 0 && this.cpuTotal % 1 === 0;
+        const pidValido = Reglas.esEnteroPositivo(this.pid);
+        const memoriaValida = Reglas.esEnteroPositivo(this.memoriaRequerida);
+        const cpuValido = Reglas.esEnteroPositivo(this.cpuTotal);
+        const eventoValido = this.eventoES === null || this.eventoES.esValido();
 
-        return pidValido && memoriaValida && cpuValido;
+        return pidValido && memoriaValida && cpuValido && eventoValido;
     }
 
     cambiarEstado(nuevoEstado: EstadoProceso): void {
+        const permitido = Proceso.TRANSICIONES[this.estado].includes(nuevoEstado);
+        Reglas.exigir(permitido, `Transición no permitida: ${this.estado} -> ${nuevoEstado}`);
         this.estado = nuevoEstado;
     }
 
@@ -67,16 +80,29 @@ export class Proceso implements IProceso {
         this.quantumConsumido = this.quantumConsumido + 1;
     }
 
+    reiniciarQuantum(): void {
+        this.quantumConsumido = 0;
+    }
+
     public getTamano(): number {
         return this.memoriaRequerida;
     }
 
     // Métodos de E/S 
-    public getEventoES(): EventoES | null { return this.eventoES; }
+    public getEventoES(): IEventoES | null { return this.eventoES; }
     public getBloqueoRestante(): number { return this.bloqueoRestante; }
+
+    // El evento se dispara una sola vez, cuando el proceso consumió los ticks de CPU indicados y todavía no terminó.
+    public debeBloquearse(): boolean {
+        const consumido = this.cpuTotal - this.cpuRestante;
+        return this.eventoES !== null
+            && !this.yaSeBloqueo
+            && this.cpuRestante > 0
+            && consumido >= this.eventoES.getTickDisparo();
+    }
     
-    public iniciarBloqueo(duracion: number): void {
-        this.bloqueoRestante = duracion;
+    public iniciarBloqueo(): void {
+        this.bloqueoRestante = this.eventoES?.getDuracion() ?? 0;
         this.yaSeBloqueo = true;
     }
 

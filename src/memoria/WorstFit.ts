@@ -2,7 +2,7 @@ import { IBuscarHueco } from './IBuscarHueco';
 import { IBloqueMemoria } from './IBloqueMemoria';
 
 export class WorstFit implements IBuscarHueco {
-    buscarBloque(bloques: IBloqueMemoria[], tamanoRequerido: number): IBloqueMemoria | null {
+    buscarBloque(bloques: ReadonlyArray<IBloqueMemoria>, tamanoRequerido: number): IBloqueMemoria | null {
         let peorBloque: IBloqueMemoria | null = null;
 
         for (let i = 0; i < bloques.length; i++) {

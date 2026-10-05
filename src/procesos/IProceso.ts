@@ -1,5 +1,5 @@
 import { EstadoProceso } from './EstadoProceso';
-import { EventoES } from './EventoES';
+import { IEventoES } from './IEventoES';
 
 export interface IProceso {
     getPid(): number;
@@ -11,9 +11,11 @@ export interface IProceso {
     esValido():boolean;
     cambiarEstado(nuevoEstado: EstadoProceso): void;
     ejecutarUnTick(): void;
+    reiniciarQuantum(): void;
     getTamano(): number;
-    getEventoES(): EventoES | null;
+    getEventoES(): IEventoES | null;
+    debeBloquearse(): boolean;
     getBloqueoRestante(): number;
     reducirBloqueo(): void;
-    iniciarBloqueo(duracion: number): void;
+    iniciarBloqueo(): void;
 }

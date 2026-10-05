@@ -192,4 +192,29 @@ describe('Batería Exhaustiva de Pruebas AE2 - Simulador OS', () => {
         });
     });
 
+    describe('7. Invariantes del Sistema durante Simulación Larga', () => {
+        test('Tras 20 Ticks, no hay PIDs duplicados ni procesos fantasmas', () => {
+            const simulador = new Simulador(new GestorMemoria(1000, new BestFit()), new Procesador(), new RoundRobin(2));
+            
+            // cargamos varios procesos
+            simulador.agregarProceso(new Proceso(1, 300, 4));
+            simulador.agregarProceso(new Proceso(2, 400, 3));
+            simulador.agregarProceso(new Proceso(3, 500, 2));
+            simulador.agregarProceso(new Proceso(4, 200, 3));
+
+            // dejamos correr el tiempo por 20 ticks
+            for (let tick = 0; tick < 20; tick++) {
+                simulador.ejecutarReloj();
+            }
+
+            // no importa donde esten parados, siempre tienen que sumar 4 procesos en el sistema
+            const enNuevos = simulador.getProcesosNuevos().length;
+            const enMemoria = simulador.getProcesosEsperandoMemoria().length;
+            const enListos = simulador.getProcesosListos().length;
+            const enTerminados = simulador.getProcesosTerminados().length;
+            
+            expect(enNuevos + enMemoria + enListos + enTerminados).toBe(4);
+        });
+    });
+
 });

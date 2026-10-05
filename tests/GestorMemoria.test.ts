@@ -41,12 +41,15 @@ describe('Gestor de Memoria (Patrón Estrategia y SOLID)', () => {
         gestor.asignarMemoria(p2);
         gestor.asignarMemoria(p3);
 
+        // Al liberar p2 (300) + el sobrante del final (100) = 400 KB libres totales
         gestor.liberarMemoria(p2);
-        expect(gestor.getMemoriaLibreTotal()).toBe(300);
+        expect(gestor.getMemoriaLibreTotal()).toBe(400);
 
+        // Al liberar p1 (200) se fusiona con p2 -> 200 + 300 + 100 = 600 KB libres totales
         gestor.liberarMemoria(p1);
-        expect(gestor.getMemoriaLibreTotal()).toBe(500);
+        expect(gestor.getMemoriaLibreTotal()).toBe(600);
 
+        // Al liberar p3 se fusiona todo -> recupera los 1000 KB totales de la RAM
         gestor.liberarMemoria(p3);
         expect(gestor.getMemoriaLibreTotal()).toBe(1000);
     });

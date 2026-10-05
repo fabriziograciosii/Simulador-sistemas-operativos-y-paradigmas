@@ -1,5 +1,6 @@
 import { EstadoProceso } from './EstadoProceso';
 import { IProceso } from './IProceso';
+import { EventoES } from './EventoES';
 
 export class Proceso implements IProceso {
     private readonly pid: number;
@@ -10,7 +11,11 @@ export class Proceso implements IProceso {
     private cpuRestante: number;
     private quantumConsumido: number;
 
-    constructor(pid: number, memoriaRequerida: number, cpuTotal: number) {
+    private eventoES: EventoES | null = null;
+    private bloqueoRestante: number = 0;
+    private yaSeBloqueo: boolean = false;
+
+    constructor(pid: number, memoriaRequerida: number, cpuTotal: number, eventoES: EventoES | null = null) {
         this.pid = pid;
         this.memoriaRequerida = memoriaRequerida;
         this.cpuTotal = cpuTotal;
@@ -66,5 +71,17 @@ export class Proceso implements IProceso {
         return this.memoriaRequerida;
     }
 
+    // Métodos de E/S 
+    public getEventoES(): EventoES | null { return this.eventoES; }
+    public getBloqueoRestante(): number { return this.bloqueoRestante; }
+    
+    public iniciarBloqueo(duracion: number): void {
+        this.bloqueoRestante = duracion;
+        this.yaSeBloqueo = true;
+    }
+
+    public reducirBloqueo(): void {
+        this.bloqueoRestante = Math.max(0, this.bloqueoRestante - 1);
+    }
 
 }

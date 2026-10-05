@@ -5,6 +5,7 @@ import { BestFit } from '../src/memoria/BestFit';
 import { Procesador } from '../src/cpu/Procesador';
 import { RoundRobin } from '../src/cpu/RoundRobin';
 import { Proceso } from '../src/procesos/Proceso';
+import { EventoES } from '../src/procesos/EventoES';
 
 describe('Batería Exhaustiva de Pruebas AE2 - Simulador OS', () => {
 
@@ -258,6 +259,25 @@ describe('Batería Exhaustiva de Pruebas AE2 - Simulador OS', () => {
             expect(simulador.getPorcentajeUsoCPU()).toBeGreaterThan(50); // cpu trabajando
         });
     });
+    });
+
+    describe('9. Bloqueo por Entrada y Salida (E/S)', () => {
+        test('Un proceso se bloquea al cumplir sus ticks de CPU y retorna tras el temporizador', () => {
+            const simulador = new Simulador(new GestorMemoria(1024, new BestFit()), new Procesador(), new RoundRobin(2));
+            const evento = new EventoES(1, 2); // Se bloquea tras 1 tick de CPU, dura 2 ticks
+            const proceso = new Proceso(1, 100, 3, evento);
+
+            simulador.agregarProceso(proceso);
+            simulador.ejecutarReloj(); // Tick 1: Ejecuta 1 tick, detecta el evento y pasa a Bloqueado
+
+            expect(simulador.getProcesosBloqueados().length).toBe(1);
+            expect(proceso.getEstado()).toBe(EstadoProceso.BLOQUEADO);
+
+            simulador.ejecutarReloj(); // Tick 2: Sigue bloqueado (resta 1)
+            simulador.ejecutarReloj(); // Tick 3: Vence el temporizador, vuelve a Listos
+
+            expect(proceso.getEstado() === EstadoProceso.LISTO || proceso.getEstado() === EstadoProceso.EJECUTANDO).toBe(true);
+        });
     });
 
 });

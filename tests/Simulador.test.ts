@@ -6,6 +6,7 @@ import { Procesador } from '../src/cpu/Procesador';
 import { RoundRobin } from '../src/cpu/RoundRobin';
 import { Proceso } from '../src/procesos/Proceso';
 import { EventoES } from '../src/procesos/EventoES';
+import { EstadoProceso } from '../src/procesos/EstadoProceso';
 
 describe('Batería Exhaustiva de Pruebas AE2 - Simulador OS', () => {
 
@@ -268,15 +269,17 @@ describe('Batería Exhaustiva de Pruebas AE2 - Simulador OS', () => {
             const proceso = new Proceso(1, 100, 3, evento);
 
             simulador.agregarProceso(proceso);
-            simulador.ejecutarReloj(); // Tick 1: Ejecuta 1 tick, detecta el evento y pasa a Bloqueado
+            
+            simulador.ejecutarReloj(); // Tick 1: El proceso ingresa a memoria y pasa a listos/CPU
+            simulador.ejecutarReloj(); // Tick 2: El proceso ejecuta 1 tick en CPU, detecta el evento y pasa a Bloqueado
 
             expect(simulador.getProcesosBloqueados().length).toBe(1);
             expect(proceso.getEstado()).toBe(EstadoProceso.BLOQUEADO);
 
-            simulador.ejecutarReloj(); // Tick 2: Sigue bloqueado (resta 1)
-            simulador.ejecutarReloj(); // Tick 3: Vence el temporizador, vuelve a Listos
+            simulador.ejecutarReloj(); // Tick 3: Sigue bloqueado (resta 1 al temporizador)
+            simulador.ejecutarReloj(); // Tick 4: Vence el temporizador, retorna a Listos
 
-            expect(proceso.getEstado() === EstadoProceso.LISTO || proceso.getEstado() === EstadoProceso.EJECUTANDO).toBe(true);
+            expect(simulador.getProcesosBloqueados().length).toBe(0);
         });
     });
 

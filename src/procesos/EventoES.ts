@@ -1,4 +1,6 @@
-export class EventoES {
+import { IEventoES } from './IEventoES';
+
+export class EventoES implements IEventoES {
     private readonly tickDisparo: number;
     private readonly duracion: number;
 

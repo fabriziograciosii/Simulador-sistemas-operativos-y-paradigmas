@@ -10,7 +10,6 @@ export class Proceso implements IProceso {
     private estado: EstadoProceso;
     private cpuRestante: number;
     private quantumConsumido: number;
-
     private eventoES: EventoES | null = null;
     private bloqueoRestante: number = 0;
     private yaSeBloqueo: boolean = false;
@@ -19,6 +18,7 @@ export class Proceso implements IProceso {
         this.pid = pid;
         this.memoriaRequerida = memoriaRequerida;
         this.cpuTotal = cpuTotal;
+        this.eventoES = eventoES;
         
         this.cpuRestante = cpuTotal;
         this.estado = EstadoProceso.NUEVO;

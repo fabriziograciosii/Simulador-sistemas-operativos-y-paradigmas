@@ -40,4 +40,24 @@ export class GestorMemoria implements IGestorMemoria {
             esElBloqueDelProceso ? bloque.liberar() : null;
         }
     }
+
+    public getMemoriaLibreTotal(): number {
+        let total = 0;
+        for (let i = 0; i < this.bloques.length; i++) {
+                // Sumamos el tamaño si está libre, o sumamos 0 si está ocupado
+            total += this.bloques[i].estaLibre() ? this.bloques[i].getTamano() : 0;
+        }
+        return total;
+    }
+
+    public getMayorHuecoLibre(): number {
+        let mayor = 0;
+        for (let i = 0; i < this.bloques.length; i++) {
+            const libre = this.bloques[i].estaLibre();
+            const tamano = this.bloques[i].getTamano();
+            
+            mayor = (libre && tamano > mayor) ? tamano : mayor;
+        }
+        return mayor;
+    }
 }

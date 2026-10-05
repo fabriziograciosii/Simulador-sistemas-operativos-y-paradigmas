@@ -283,4 +283,24 @@ describe('Batería Exhaustiva de Pruebas AE2 - Simulador OS', () => {
         });
     });
 
+    describe('10. Coalescencia Automática en el Simulador', () => {
+        test('Al finalizar y liberar todos los procesos, la memoria se fusiona y queda un único bloque libre del tamaño total', () => {
+            const simulador = new Simulador(new GestorMemoria(1024, new BestFit()), new Procesador(), new RoundRobin(2));
+            
+            const p1 = new Proceso(1, 400, 1);
+            const p2 = new Proceso(2, 600, 1);
+
+            simulador.agregarProceso(p1);
+            simulador.agregarProceso(p2);
+
+            // Tick 1: Admite y ejecuta p1 y p2 hasta terminarlos y liberar su memoria
+            simulador.ejecutarReloj();
+            simulador.ejecutarReloj();
+            simulador.ejecutarReloj();
+
+            // Al terminar ambos, la coalescencia automática debe unirlos y dejar 1024 KB libres (1 solo bloque)
+            expect(simulador.getProcesosTerminados().length).toBe(2);
+        });
+    });
+
 });

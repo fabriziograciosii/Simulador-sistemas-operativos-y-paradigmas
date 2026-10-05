@@ -1,4 +1,5 @@
 import { IProceso } from '../procesos/IProceso';
+import { IProcesoConsulta } from '../procesos/IProcesoConsulta';
 import { EstadoProceso } from '../procesos/EstadoProceso';
 import { IGestorMemoria } from '../memoria/IGestorMemoria';
 import { IVistaBloque } from '../memoria/IVistaBloque';
@@ -35,12 +36,12 @@ export class Simulador implements ISimulador {
 
     // Las consultas devuelven copias: modificar el arreglo recibido no altera el estado interno.
     public getTickActual(): number { return this._ticksTotales; }
-    public getProcesoEnCPU(): IProceso | null { return this._procesador.getProcesoActual(); }
-    public getProcesosNuevos(): IProceso[] { return [...this._procesosNuevos]; }
-    public getProcesosEsperandoMemoria(): IProceso[] { return [...this._procesosEsperandoMemoria]; }
-    public getProcesosListos(): IProceso[] { return [...this._procesosListos]; }
-    public getProcesosBloqueados(): IProceso[] { return [...this._procesosBloqueados]; }
-    public getProcesosTerminados(): IProceso[] { return [...this._procesosTerminados]; }
+    public getProcesoEnCPU(): IProcesoConsulta | null { return this._procesador.getProcesoActual(); }
+    public getProcesosNuevos(): IProcesoConsulta[] { return [...this._procesosNuevos]; }
+    public getProcesosEsperandoMemoria(): IProcesoConsulta[] { return [...this._procesosEsperandoMemoria]; }
+    public getProcesosListos(): IProcesoConsulta[] { return [...this._procesosListos]; }
+    public getProcesosBloqueados(): IProcesoConsulta[] { return [...this._procesosBloqueados]; }
+    public getProcesosTerminados(): IProcesoConsulta[] { return [...this._procesosTerminados]; }
     public getMapaMemoria(): ReadonlyArray<IVistaBloque> { return this._gestorMemoria.getMapaMemoria(); }
 
     public agregarProceso(proceso: IProceso): void {

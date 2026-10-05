@@ -1,21 +1,14 @@
 import { EstadoProceso } from './EstadoProceso';
-import { IEventoES } from './IEventoES';
+import { IProcesoConsulta } from './IProcesoConsulta';
 
-export interface IProceso {
-    getPid(): number;
-    getMemoriaRequerida(): number;
-    getCpuTotal(): number;
-    getCpuRestante(): number;
-    getEstado(): EstadoProceso;
-    getQuantumConsumido(): number;
-    esValido():boolean;
+// Contrato completo: consultas + operaciones que modifican el proceso (solo para colaboradores internos).
+export interface IProceso extends IProcesoConsulta {
+    esValido(): boolean;
     cambiarEstado(nuevoEstado: EstadoProceso): void;
     ejecutarUnTick(): void;
     reiniciarQuantum(): void;
     getTamano(): number;
-    getEventoES(): IEventoES | null;
     debeBloquearse(): boolean;
-    getBloqueoRestante(): number;
     reducirBloqueo(): void;
     iniciarBloqueo(): void;
 }

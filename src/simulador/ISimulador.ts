@@ -1,4 +1,5 @@
 import { IProceso } from '../procesos/IProceso';
+import { IProcesoConsulta } from '../procesos/IProcesoConsulta';
 import { IVistaBloque } from '../memoria/IVistaBloque';
 
 export interface ISimulador {
@@ -6,12 +7,12 @@ export interface ISimulador {
     ejecutarReloj(): void;
 
     getTickActual(): number;
-    getProcesoEnCPU(): IProceso | null;
-    getProcesosNuevos(): IProceso[];
-    getProcesosEsperandoMemoria(): IProceso[];
-    getProcesosListos(): IProceso[];
-    getProcesosBloqueados(): IProceso[];
-    getProcesosTerminados(): IProceso[];
+    getProcesoEnCPU(): IProcesoConsulta | null;
+    getProcesosNuevos(): IProcesoConsulta[];
+    getProcesosEsperandoMemoria(): IProcesoConsulta[];
+    getProcesosListos(): IProcesoConsulta[];
+    getProcesosBloqueados(): IProcesoConsulta[];
+    getProcesosTerminados(): IProcesoConsulta[];
     getMapaMemoria(): ReadonlyArray<IVistaBloque>;
 
     getOcupacionMemoria(): number;

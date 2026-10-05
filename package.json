@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/fabriziograciosii/Simulador-sistemas-operativos-y-paradigmas#readme",
   "devDependencies": {
+    "@vitest/coverage-v8": "^5.0.2",
     "typescript": "^7.0.2",
     "vitest": "^5.0.2"
   }

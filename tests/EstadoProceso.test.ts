@@ -48,4 +48,20 @@ describe('Proceso: validación, estados y E/S (RF02, RF03 y RF08)', () => {
         expect(proceso.getQuantumConsumido()).toBe(0);
         expect(proceso.getCpuRestante()).toBe(3);
     });
+
+    test('El evento de E/S se dispara una sola vez y el temporizador nunca queda negativo', () => {
+        const proceso = new Proceso(1, 100, 5, new EventoES(2, 1));
+
+        proceso.ejecutarUnTick();
+        expect(proceso.debeBloquearse()).toBe(false);
+        proceso.ejecutarUnTick();
+        expect(proceso.debeBloquearse()).toBe(true);
+
+        proceso.iniciarBloqueo();
+        expect(proceso.getBloqueoRestante()).toBe(1);
+        expect(proceso.debeBloquearse()).toBe(false);
+        proceso.reducirBloqueo();
+        proceso.reducirBloqueo();
+        expect(proceso.getBloqueoRestante()).toBe(0);
+    });
 });

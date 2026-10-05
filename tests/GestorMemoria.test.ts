@@ -29,4 +29,25 @@ describe('Gestor de Memoria (Patrón Estrategia y SOLID)', () => {
 
         expect(pudoAsignar).toBe(true);
     });
+
+    test('Debe realizar coalescencia automática fusionando bloques adyacentes libres', () => {
+        const gestor = new GestorMemoria(1000, new BestFit());
+        
+        const p1 = new Proceso(1, 200, 5);
+        const p2 = new Proceso(2, 300, 5);
+        const p3 = new Proceso(3, 400, 5);
+
+        gestor.asignarMemoria(p1);
+        gestor.asignarMemoria(p2);
+        gestor.asignarMemoria(p3);
+
+        gestor.liberarMemoria(p2);
+        expect(gestor.getMemoriaLibreTotal()).toBe(300);
+
+        gestor.liberarMemoria(p1);
+        expect(gestor.getMemoriaLibreTotal()).toBe(500);
+
+        gestor.liberarMemoria(p3);
+        expect(gestor.getMemoriaLibreTotal()).toBe(1000);
+    });
 });

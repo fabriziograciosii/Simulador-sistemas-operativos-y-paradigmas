@@ -31,14 +31,34 @@ export class GestorMemoria implements IGestorMemoria {
         return bloqueElegido !== null;
     }
 
-    liberarMemoria(proceso: IProceso): void {
-
+    public liberarMemoria(proceso: IProceso): void {
         for (let i = 0; i < this.bloques.length; i++) {
             const bloque = this.bloques[i];
             const esElBloqueDelProceso = bloque.getProceso() === proceso;
             
             esElBloqueDelProceso ? bloque.liberar() : null;
         }
+        this.coalescer();
+    }
+
+    // Fusión automática de bloques libres adyacentes
+    private coalescer(): void {
+        this.bloques.sort((a, b) => a.getInicio() - b.getInicio());
+        const bloquesFusionados: IBloqueMemoria[] = [];
+        
+        for (let i = 0; i < this.bloques.length; i++) {
+            const actual = this.bloques[i];
+            const ultimo = bloquesFusionados.length > 0 ? bloquesFusionados[bloquesFusionados.length - 1] : null;
+
+            const sonAdyacentesYLibres = ultimo !== null && 
+                ultimo.estaLibre() && 
+                actual.estaLibre() && 
+                (ultimo.getInicio() + ultimo.getTamano() === actual.getInicio());
+
+            sonAdyacentesYLibres ? ultimo.expandir(actual.getTamano()) : bloquesFusionados.push(actual);
+        }
+
+        this.bloques = bloquesFusionados;
     }
 
     public getMemoriaLibreTotal(): number {

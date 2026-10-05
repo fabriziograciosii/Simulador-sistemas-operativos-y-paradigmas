@@ -42,12 +42,13 @@ export class Simulador implements ISimulador {
 
     public ejecutarReloj(): void {
         this._ticksTotales++; 
-        !this._procesador.estaLibre() ? this._ticksCPUOcupada++ : undefined;
 
         this.despertarProcesosNuevos();
         this.admitirEnMemoria();
         this.gestionarCPU();
         this._procesador.ejecutarTick();
+
+        !this._procesador.estaLibre() ? this._ticksCPUOcupada++ : undefined;
     }
 
     // --- MÉTODOS PRIVADOS ---

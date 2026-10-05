@@ -45,13 +45,26 @@ export class Simulador implements ISimulador {
 
         this.despertarProcesosNuevos();
         this.admitirEnMemoria();
-        this.gestionarCPU();
-        this._procesador.ejecutarTick();
+        
+        // --- GESTIÓN DE BLOQUEADOS POR E/S (Cero IF) ---
+        let siguenBloqueados: IProceso[] = [];
+        for (let i = 0; i < this._procesosBloqueados.length; i++) {
+            const p = this._procesosBloqueados[i];
+            p.reducirBloqueo();
+            const terminoBloqueo = p.getBloqueoRestante() === 0;
 
+            terminoBloqueo ? p.cambiarEstado(EstadoProceso.LISTO) : undefined;
+            terminoBloqueo ? this._procesosListos = [...this._procesosListos, p] : undefined;
+            !terminoBloqueo ? siguenBloqueados = [...siguenBloqueados, p] : undefined;
+        }
+        this._procesosBloqueados = siguenBloqueados;
+        // ----------------------------------------------
+
+        this.gestionarCPU();
+        this._procesador.ejecutarTick(); 
+        
         !this._procesador.estaLibre() ? this._ticksCPUOcupada++ : undefined;
     }
-
-    // --- MÉTODOS PRIVADOS ---
 
     private despertarProcesosNuevos(): void {
         for (let i = 0; i < this._procesosNuevos.length; i++) {

@@ -45,5 +45,45 @@ describe('Memoria contigua, coalescencia y fragmentación (RF04, RF05 y RF09)', 
         expect(new WorstFit().buscarBloque(bloques, 50)?.getInicio()).toBe(0);
     });
 
-    
+    test('Si no hay hueco suficiente falla sin alterar la memoria, aunque la suma libre alcance', () => {
+        const gestor = memoriaConHuecos(new BestFit());
+
+        const pudo = gestor.asignarMemoria(new Proceso(9, 350, 1));
+
+        expect(pudo).toBe(false);
+        expect(gestor.getMemoriaLibreTotal()).toBe(400);
+        expect(gestor.getMayorHuecoLibre()).toBe(300);
+    });
+
+    test('La coalescencia fusiona con el vecino izquierdo, el derecho y ambos', () => {
+        const armar = () => {
+            const gestor = new GestorMemoria(600, new BestFit());
+            const procesos = [200, 200, 200].map((t, i) => new Proceso(i + 1, t, 1));
+            procesos.forEach((p) => gestor.asignarMemoria(p));
+            return { gestor, procesos };
+        };
+
+        const izquierda = armar();
+        izquierda.gestor.liberarMemoria(izquierda.procesos[0]);
+        izquierda.gestor.liberarMemoria(izquierda.procesos[1]); // se une con el hueco de su izquierda
+        expect(izquierda.gestor.getMayorHuecoLibre()).toBe(400);
+
+        const derecha = armar();
+        derecha.gestor.liberarMemoria(derecha.procesos[1]);
+        derecha.gestor.liberarMemoria(derecha.procesos[0]); // se une con el hueco de su derecha
+        expect(derecha.gestor.getMayorHuecoLibre()).toBe(400);
+
+        const ambos = armar();
+        ambos.gestor.liberarMemoria(ambos.procesos[0]);
+        ambos.gestor.liberarMemoria(ambos.procesos[2]);
+        ambos.gestor.liberarMemoria(ambos.procesos[1]); // une izquierda y derecha
+        expect(ambos.gestor.getMayorHuecoLibre()).toBe(600);
+        expect(ambos.gestor.getMemoriaLibreTotal()).toBe(600);
+    });
+
+    test('Con huecos de 100 y 300 KB la fragmentación externa es 25 %', () => {
+        const simulador = new Simulador(memoriaConHuecos(new BestFit()), new Procesador(), new RoundRobin(2));
+
+        expect(simulador.getFragmentacionExterna()).toBe(25);
+    });
 });

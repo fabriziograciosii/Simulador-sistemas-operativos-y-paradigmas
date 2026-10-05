@@ -144,4 +144,52 @@ describe('Batería Exhaustiva de Pruebas AE2 - Simulador OS', () => {
         });
     });
 
+    describe('5. Terminación y Liberación', () => {
+        test('Al llegar a 0 de ráfaga, pasa a Terminados', () => {
+            const simulador = new Simulador(new GestorMemoria(1024, new BestFit()), new Procesador(), new RoundRobin(2));
+            simulador.agregarProceso(new Proceso(1, 100, 1)); 
+
+            // consume su unico tick y luego el simulador detecta que termino
+            simulador.ejecutarReloj(); 
+            simulador.ejecutarReloj(); 
+
+            // verificamos que este en la cola de terminados
+            expect(simulador.getProcesosTerminados().length).toBe(1);
+            expect(simulador.getProcesosTerminados()[0].getPid()).toBe(1);
+        });
+    });
+
+    describe('6. Requerimientos de Métricas (AE2)', () => {
+        test('Calcula Fragmentación Externa (%) matemáticamente', () => {
+            const simulador = new Simulador(new GestorMemoria(1024, new BestFit()), new Procesador(), new RoundRobin(2));
+            simulador.agregarProceso(new Proceso(1, 1024, 5)); // llenamos toda la memoria
+            
+            simulador.ejecutarReloj();
+            // comprobamos la formula del excel (sin memoria libre = 0 frag)
+            expect(simulador.getFragmentacionExterna()).toBe(0);
+        });
+
+        test('Suma Cambios de Contexto por intervenciones del Round Robin', () => {
+            const simulador = new Simulador(new GestorMemoria(1024, new BestFit()), new Procesador(), new RoundRobin(1));
+            simulador.agregarProceso(new Proceso(1, 100, 5));
+            simulador.agregarProceso(new Proceso(2, 100, 5));
+
+            simulador.ejecutarReloj(); // p1 entra a la cpu
+            simulador.ejecutarReloj(); // expulsa a p1, entra p2 (+1)
+            simulador.ejecutarReloj(); // expulsa a p2, entra p1 (+2)
+            expect(simulador.getCambiosDeContexto()).toBe(2);
+        });
+
+        test('El Uso de CPU sube solo si hay un proceso ejecutándose', () => {
+            const simulador = new Simulador(new GestorMemoria(1024, new BestFit()), new Procesador(), new RoundRobin(2));
+            simulador.agregarProceso(new Proceso(1, 100, 1));
+
+            simulador.ejecutarReloj(); 
+            expect(simulador.getPorcentajeUsoCPU()).toBe(100);
+
+            simulador.ejecutarReloj(); 
+            expect(simulador.getPorcentajeUsoCPU()).toBe(50);
+        });
+    });
+
 });

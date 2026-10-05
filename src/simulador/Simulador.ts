@@ -81,12 +81,16 @@ export class Simulador implements ISimulador {
 
         const termino = actual !== null && actual.getCpuRestante() === 0;
         const agotoQuantum = actual !== null && !termino && actual.getQuantumConsumido() >= this._planificador.getQuantum();
-        const cpuLibre = this._procesador.estaLibre() || termino || agotoQuantum;
-        const hayListos = this._procesosListos.length > 0;
 
+        // 1. Primero expulsamos o terminamos lo que haya que sacar
         termino ? this.finalizarProcesoActual(actual as IProceso) : undefined;
         agotoQuantum ? this.rotarProcesoActual(actual as IProceso) : undefined;
         
+        // 2. RE-EVALUAMOS el estado ahora, después de haber limpiado la CPU
+        const cpuLibre = this._procesador.estaLibre();
+        const hayListos = this._procesosListos.length > 0;
+
+        // 3. Hacemos entrar al siguiente (o al mismo si es el único en la fila)
         (cpuLibre && hayListos) ? this.despacharSiguienteProceso() : undefined;
     }
 

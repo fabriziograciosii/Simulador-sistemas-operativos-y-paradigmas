@@ -31,4 +31,31 @@ describe('Batería Exhaustiva de Pruebas AE2 - Simulador OS', () => {
         });
     });
 
+    describe('2. Registro y Avance (El Reloj)', () => {
+        test('Mantiene el orden de llegada en la cola de Nuevos', () => {
+            const simulador = new Simulador(new GestorMemoria(1024, new BestFit()), new Procesador(), new RoundRobin(2));
+            // agregamos dos procesos en orden
+            simulador.agregarProceso(new Proceso(1, 100, 3));
+            simulador.agregarProceso(new Proceso(2, 200, 3));
+
+            // validamos que se respete quien llego primero
+            const nuevos = simulador.getProcesosNuevos();
+            expect(nuevos.length).toBe(2);
+            expect(nuevos[0].getPid()).toBe(1);
+            expect(nuevos[1].getPid()).toBe(2);
+        });
+
+        test('Al avanzar el tick, los procesos migran de Nuevos a Esperando Memoria y a Listos', () => {
+            const simulador = new Simulador(new GestorMemoria(1024, new BestFit()), new Procesador(), new RoundRobin(2));
+            simulador.agregarProceso(new Proceso(1, 100, 3));
+            
+            // ejecutamos el reloj para mover el proceso de cola
+            simulador.ejecutarReloj(); 
+            
+            // como hay memoria libre, no deberia quedar en espera
+            expect(simulador.getProcesosNuevos().length).toBe(0);
+            expect(simulador.getProcesosEsperandoMemoria().length).toBe(0);
+        });
+    });
+
 });

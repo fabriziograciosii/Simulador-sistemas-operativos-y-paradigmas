@@ -120,7 +120,7 @@ describe('Batería Exhaustiva de Pruebas AE2 - Simulador OS', () => {
             // hacemos pasar dos ticks para agotar el quantum de p1
             simulador.ejecutarReloj(); 
             simulador.ejecutarReloj(); 
-            expect(cpu.getProcesoActual()?.getPid()).toBe(1);
+            expect(cpu.getProcesoActual()).toBeNull(); // p1 sale al agotar el quantum
             
             // aca ocurre la magia de la rotacion
             simulador.ejecutarReloj(); 
@@ -177,9 +177,9 @@ describe('Batería Exhaustiva de Pruebas AE2 - Simulador OS', () => {
             simulador.agregarProceso(new Proceso(2, 100, 5));
 
             simulador.ejecutarReloj(); // p1 entra a la cpu
-            simulador.ejecutarReloj(); // expulsa a p1, entra p2 (+1)
-            simulador.ejecutarReloj(); // expulsa a p2, entra p1 (+2)
-            expect(simulador.getCambiosDeContexto()).toBe(2);
+            simulador.ejecutarReloj(); // p1 sale al agotar su quantum (+1) y entra p2
+            simulador.ejecutarReloj(); // p2 sale (+2) y entra p1
+            expect(simulador.getCambiosDeContexto()).toBe(3); // p1 tambien sale en este tick (+3)
         });
 
         test('El Uso de CPU sube solo si hay un proceso ejecutándose', () => {

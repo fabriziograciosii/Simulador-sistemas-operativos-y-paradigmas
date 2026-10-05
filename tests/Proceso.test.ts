@@ -32,9 +32,9 @@ describe('Entidad Proceso - Inicializacion', () => {
     test('Debe cambiar su estado correctamente', () => {
         const proceso = new Proceso(1, 100, 5);
         
-        proceso.cambiarEstado(EstadoProceso.LISTO);
+        proceso.cambiarEstado(EstadoProceso.ESPERANDO_MEMORIA);
         
-        expect(proceso.getEstado()).toBe(EstadoProceso.LISTO);
+        expect(proceso.getEstado()).toBe(EstadoProceso.ESPERANDO_MEMORIA);
     });
 
     test('Debe ejecutar un tick descontando CPU y sumando quantum ', () => {

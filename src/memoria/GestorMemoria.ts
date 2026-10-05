@@ -1,15 +1,21 @@
 import { IGestorMemoria } from './IGestorMemoria';
 import { IBuscarHueco } from './IBuscarHueco';
 import { IBloqueMemoria } from './IBloqueMemoria';
+import { IVistaBloque } from './IVistaBloque';
 import { BloqueMemoria } from './BloqueMemoria';
 import { IProceso } from '../procesos/IProceso';
+import { Reglas } from '../comun/Reglas';
 
 export class GestorMemoria implements IGestorMemoria {
+    // Invariante: los bloques están siempre ordenados por dirección, sin huecos ni solapamientos.
     private bloques: IBloqueMemoria[];
-    private algoritmo: IBuscarHueco; 
+    private readonly algoritmo: IBuscarHueco; 
+    private readonly tamanoTotal: number;
 
     constructor(tamanoTotal: number, algoritmo: IBuscarHueco) {
+        Reglas.exigir(Reglas.esEnteroPositivo(tamanoTotal), 'La memoria total debe ser un entero positivo');
 
+        this.tamanoTotal = tamanoTotal;
         this.bloques = [new BloqueMemoria(0, tamanoTotal)];
         this.algoritmo = algoritmo;
     }
@@ -21,9 +27,9 @@ export class GestorMemoria implements IGestorMemoria {
 
         const sobrante = bloqueElegido !== null ? bloqueElegido.dividir(proceso.getTamano()) : null;
 
-
-        sobrante !== null ? this.bloques.push(sobrante) : null;
-
+        // El sobrante se inserta justo después del bloque dividido para conservar el orden por dirección.
+        const posicion = bloqueElegido !== null ? this.bloques.indexOf(bloqueElegido) : -1;
+        sobrante !== null ? this.bloques.splice(posicion + 1, 0, sobrante) : null;
 
         bloqueElegido !== null ? bloqueElegido.asignarProceso(proceso) : null;
         
@@ -41,9 +47,8 @@ export class GestorMemoria implements IGestorMemoria {
         this.coalescer();
     }
 
-    // Fusión automática de bloques libres adyacentes
+    // Fusión automática de bloques libres adyacentes (izquierda y derecha). No mueve bloques ocupados.
     private coalescer(): void {
-        this.bloques.sort((a, b) => a.getInicio() - b.getInicio());
         const bloquesFusionados: IBloqueMemoria[] = [];
         
         for (let i = 0; i < this.bloques.length; i++) {
@@ -61,6 +66,10 @@ export class GestorMemoria implements IGestorMemoria {
         this.bloques = bloquesFusionados;
     }
 
+    public getMemoriaTotal(): number {
+        return this.tamanoTotal;
+    }
+
     public getMemoriaLibreTotal(): number {
         let total = 0;
         for (let i = 0; i < this.bloques.length; i++) {
@@ -72,18 +81,25 @@ export class GestorMemoria implements IGestorMemoria {
 
     public getMayorHuecoLibre(): number {
         let mayor = 0;
-        let huecoContiguo = 0;
         
         for (let i = 0; i < this.bloques.length; i++) {
-            const libre = this.bloques[i].estaLibre();
-            const tamano = this.bloques[i].getTamano();
-            
-            // Si está libre, lo acumulamos con el anterior. Si no, cortamos la racha (vuelve a 0)
-            huecoContiguo = libre ? huecoContiguo + tamano : 0;
-            
-            // Actualizamos el récord del mayor hueco encontrado
-            mayor = huecoContiguo > mayor ? huecoContiguo : mayor;
+            const esMayorHuecoLibre = this.bloques[i].estaLibre() && this.bloques[i].getTamano() > mayor;
+            mayor = esMayorHuecoLibre ? this.bloques[i].getTamano() : mayor;
         }
         return mayor;
+    }
+
+    // 100 × memoria ocupada / memoria total
+    public getOcupacionMemoria(): number {
+        return ((this.tamanoTotal - this.getMemoriaLibreTotal()) / this.tamanoTotal) * 100;
+    }
+
+    public getMapaMemoria(): ReadonlyArray<IVistaBloque> {
+        return this.bloques.map((bloque) => ({
+            inicio: bloque.getInicio(),
+            tamano: bloque.getTamano(),
+            libre: bloque.estaLibre(),
+            pid: bloque.getProceso()?.getPid() ?? null
+        }));
     }
 }

@@ -6,93 +6,126 @@ import { IPlanificarTurno } from '../cpu/IPlanificarTurno';
 import { ISimulador } from './ISimulador';
 
 export class Simulador implements ISimulador {
-    private gestorMemoria: IGestorMemoria;
-    private procesador: IProcesador;
-    private planificador: IPlanificarTurno;
+    private _gestorMemoria: IGestorMemoria;
+    private _procesador: IProcesador;
+    private _planificador: IPlanificarTurno;
 
-    private procesosNuevos: IProceso[] = [];
-    private procesosEsperandoMemoria: IProceso[] = [];
-    private procesosListos: IProceso[] = [];
-    private procesosBloqueados: IProceso[] = [];
-    private procesosTerminados: IProceso[] = [];
+    private _procesosNuevos: IProceso[] = [];
+    private _procesosEsperandoMemoria: IProceso[] = [];
+    private _procesosListos: IProceso[] = [];
+    private _procesosBloqueados: IProceso[] = [];
+    private _procesosTerminados: IProceso[] = [];
+
+    private _ticksTotales: number = 0;
+    private _ticksCPUOcupada: number = 0;
+    private _cambiosDeContexto: number = 0;
 
     constructor(
         gestorMemoria: IGestorMemoria,
         procesador: IProcesador,
         planificador: IPlanificarTurno
     ) {
-        this.gestorMemoria = gestorMemoria;
-        this.procesador = procesador;
-        this.planificador = planificador;
+        this._gestorMemoria = gestorMemoria;
+        this._procesador = procesador;
+        this._planificador = planificador;
     }
 
-    public getProcesosNuevos(): IProceso[] { return this.procesosNuevos; }
-    public getProcesosEsperandoMemoria(): IProceso[] { return this.procesosEsperandoMemoria; }
-    public getProcesosListos(): IProceso[] { return this.procesosListos; }
-    public getProcesosBloqueados(): IProceso[] { return this.procesosBloqueados; }
-    public getProcesosTerminados(): IProceso[] { return this.procesosTerminados; }
+    public getProcesosNuevos(): IProceso[] { return this._procesosNuevos; }
+    public getProcesosEsperandoMemoria(): IProceso[] { return this._procesosEsperandoMemoria; }
+    public getProcesosListos(): IProceso[] { return this._procesosListos; }
+    public getProcesosBloqueados(): IProceso[] { return this._procesosBloqueados; }
+    public getProcesosTerminados(): IProceso[] { return this._procesosTerminados; }
 
     public agregarProceso(proceso: IProceso): void {
-        this.procesosNuevos = [...this.procesosNuevos, proceso];
+        this._procesosNuevos = [...this._procesosNuevos, proceso];
     }
 
     public ejecutarReloj(): void {
+        this._ticksTotales++; 
+        !this._procesador.estaLibre() ? this._ticksCPUOcupada++ : undefined;
+
         this.despertarProcesosNuevos();
         this.admitirEnMemoria();
         this.gestionarCPU();
-        this.procesador.ejecutarTick();
+        this._procesador.ejecutarTick();
     }
 
-    // --- MÉTODOS PRIVADOS (Faltaban estos en tu archivo) ---
+    // --- MÉTODOS PRIVADOS ---
 
     private despertarProcesosNuevos(): void {
-        this.procesosNuevos.forEach(p => p.cambiarEstado(EstadoProceso.ESPERANDO_MEMORIA));
-        this.procesosEsperandoMemoria = [...this.procesosEsperandoMemoria, ...this.procesosNuevos];
-        this.procesosNuevos = []; 
+        for (let i = 0; i < this._procesosNuevos.length; i++) {
+            this._procesosNuevos[i].cambiarEstado(EstadoProceso.ESPERANDO_MEMORIA);
+        }
+        this._procesosEsperandoMemoria = [...this._procesosEsperandoMemoria, ...this._procesosNuevos];
+        this._procesosNuevos = []; 
     }
 
     private admitirEnMemoria(): void {
-        const admitidos = this.procesosEsperandoMemoria.filter(p => this.gestorMemoria.asignarMemoria(p));
-        
-        admitidos.forEach(p => p.cambiarEstado(EstadoProceso.LISTO));
-        
-        this.procesosListos = [...this.procesosListos, ...admitidos];
-        this.procesosEsperandoMemoria = this.procesosEsperandoMemoria.filter(p => !admitidos.includes(p));
+        let siguenEsperando: IProceso[] = [];
+
+        for (let i = 0; i < this._procesosEsperandoMemoria.length; i++) {
+            const proceso = this._procesosEsperandoMemoria[i];
+            const pudoEntrar = this._gestorMemoria.asignarMemoria(proceso);
+
+            pudoEntrar ? proceso.cambiarEstado(EstadoProceso.LISTO) : undefined;
+            pudoEntrar ? this._procesosListos = [...this._procesosListos, proceso] : undefined;
+            !pudoEntrar ? siguenEsperando = [...siguenEsperando, proceso] : undefined;
+        }
+
+        this._procesosEsperandoMemoria = siguenEsperando;
     }
 
     private gestionarCPU(): void {
-        const actual = this.procesador.getProcesoActual();
+        const actual = this._procesador.getProcesoActual();
 
         const termino = actual !== null && actual.getCpuRestante() === 0;
-        const agotoQuantum = actual !== null && !termino && actual.getQuantumConsumido() >= this.planificador.getQuantum();
-        const cpuLibre = this.procesador.estaLibre() || termino || agotoQuantum;
-        const hayListos = this.procesosListos.length > 0;
+        const agotoQuantum = actual !== null && !termino && actual.getQuantumConsumido() >= this._planificador.getQuantum();
+        const cpuLibre = this._procesador.estaLibre() || termino || agotoQuantum;
+        const hayListos = this._procesosListos.length > 0;
 
-        termino ? this.finalizarProcesoActual(actual) : undefined;
-        agotoQuantum ? this.rotarProcesoActual(actual) : undefined;
+        termino ? this.finalizarProcesoActual(actual as IProceso) : undefined;
+        agotoQuantum ? this.rotarProcesoActual(actual as IProceso) : undefined;
         
         (cpuLibre && hayListos) ? this.despacharSiguienteProceso() : undefined;
     }
 
     private finalizarProcesoActual(proceso: IProceso): void {
-        this.procesador.liberarProcesador();
+        this._procesador.liberarProcesador();
         proceso.cambiarEstado(EstadoProceso.TERMINADO);
-        this.procesosTerminados = [...this.procesosTerminados, proceso];
-        this.gestorMemoria.liberarMemoria(proceso);
+        this._procesosTerminados = [...this._procesosTerminados, proceso];
+        this._gestorMemoria.liberarMemoria(proceso);
     }
 
     private rotarProcesoActual(proceso: IProceso): void {
-        this.procesador.liberarProcesador();
+        this._cambiosDeContexto++;
+        this._procesador.liberarProcesador();
         proceso.cambiarEstado(EstadoProceso.LISTO);
-        this.procesosListos = [...this.procesosListos, proceso];
+        this._procesosListos = [...this._procesosListos, proceso];
     }
 
     private despacharSiguienteProceso(): void {
-        const siguiente = this.procesosListos[0];
+        const siguiente = this._procesosListos[0];
         
-        this.procesador.asignarProceso(siguiente);
+        this._procesador.asignarProceso(siguiente);
         siguiente.cambiarEstado(EstadoProceso.EJECUTANDO);
         
-        this.procesosListos = this.procesosListos.slice(1);
+        this._procesosListos = this._procesosListos.slice(1);
+    }
+
+    // CÁLCULO DE MÉTRICAS 
+
+    public getPorcentajeUsoCPU(): number {
+        return this._ticksTotales === 0 ? 0 : (this._ticksCPUOcupada / this._ticksTotales) * 100;
+    }
+
+    public getCambiosDeContexto(): number {
+        return this._cambiosDeContexto;
+    }
+
+    public getFragmentacionExterna(): number {
+        const libreTotal = this._gestorMemoria.getMemoriaLibreTotal();
+        const mayorHueco = this._gestorMemoria.getMayorHuecoLibre();
+        
+        return libreTotal === 0 ? 0 : (1 - (mayorHueco / libreTotal)) * 100;
     }
 }

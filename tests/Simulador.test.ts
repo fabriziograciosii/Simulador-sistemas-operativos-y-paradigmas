@@ -93,4 +93,55 @@ describe('Batería Exhaustiva de Pruebas AE2 - Simulador OS', () => {
         });
     });
 
+    describe('4. Planificador Round Robin (Quantum 2)', () => {
+        test('Un proceso descuenta ticks de CPU correctamente', () => {
+            const cpu = new Procesador();
+            const simulador = new Simulador(new GestorMemoria(1024, new BestFit()), cpu, new RoundRobin(2));
+            simulador.agregarProceso(new Proceso(1, 100, 3));
+
+            // primer tick: p1 usa la cpu
+            simulador.ejecutarReloj(); 
+            expect(cpu.getProcesoActual()?.getCpuRestante()).toBe(2);
+
+            // segundo tick: vuelve a usarla
+            simulador.ejecutarReloj(); 
+            expect(cpu.getProcesoActual()?.getCpuRestante()).toBe(1);
+        });
+
+        test('Rotación exacta: Expulsa al proceso al agotar el Quantum y trae al siguiente', () => {
+            const cpu = new Procesador();
+            const simulador = new Simulador(new GestorMemoria(1024, new BestFit()), cpu, new RoundRobin(2));
+            
+            simulador.agregarProceso(new Proceso(1, 100, 5)); 
+            simulador.agregarProceso(new Proceso(2, 100, 3)); 
+
+            // hacemos pasar dos ticks para agotar el quantum de p1
+            simulador.ejecutarReloj(); 
+            simulador.ejecutarReloj(); 
+            expect(cpu.getProcesoActual()?.getPid()).toBe(1);
+            
+            // aca ocurre la magia de la rotacion
+            simulador.ejecutarReloj(); 
+            
+            // comprobamos que p2 este ahora ejecutando
+            expect(cpu.getProcesoActual()?.getPid()).toBe(2); 
+            expect(simulador.getProcesosListos()[0].getPid()).toBe(1); 
+        });
+
+        test('Si hay un solo proceso, ignora el Quantum y sigue ejecutando hasta terminar', () => {
+            const cpu = new Procesador();
+            const simulador = new Simulador(new GestorMemoria(1024, new BestFit()), cpu, new RoundRobin(2));
+            simulador.agregarProceso(new Proceso(1, 100, 4)); 
+
+            // p1 corre por 3 ticks seguidos (supera el quantum de 2)
+            simulador.ejecutarReloj(); 
+            simulador.ejecutarReloj(); 
+            simulador.ejecutarReloj(); 
+
+            // como esta solo en el sistema, no deberia soltar la cpu
+            expect(cpu.getProcesoActual()?.getPid()).toBe(1);
+            expect(simulador.getCambiosDeContexto()).toBe(0);
+        });
+    });
+
 });

@@ -46,7 +46,7 @@ export class Simulador implements ISimulador {
         this.despertarProcesosNuevos();
         this.admitirEnMemoria();
         
-        // --- GESTIÓN DE BLOQUEADOS POR E/S (Cero IF) ---
+        // --- GESTIÓN DE BLOQUEADOS POR E/S  ---
         let siguenBloqueados: IProceso[] = [];
         for (let i = 0; i < this._procesosBloqueados.length; i++) {
             const p = this._procesosBloqueados[i];
@@ -112,7 +112,7 @@ export class Simulador implements ISimulador {
     }
 
     private bloquearProcesoActual(proceso: IProceso): void {
-        this._cambiosDeContexto++; // Un bloqueo cuenta como cambio de contexto según RF09
+        this._cambiosDeContexto++; // Un bloqueo cuenta como cambio de contexto según RF09[cite: 8]
         this._procesador.liberarProcesador();
         proceso.cambiarEstado(EstadoProceso.BLOQUEADO);
         const evento = proceso.getEventoES();

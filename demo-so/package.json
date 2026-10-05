@@ -1,0 +1,18 @@
+{
+  "name": "demo-so",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demo de consola del simulador (solo para capturas de pantalla; NO forma parte de la biblioteca entregada)",
+  "type": "module",
+  "scripts": {
+    "start": "tsx main.ts",
+    "start:best": "tsx main.ts best",
+    "start:worst": "tsx main.ts worst",
+    "comparar": "tsx main.ts comparar"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "@types/node": "^22.0.0"
+  }
+}

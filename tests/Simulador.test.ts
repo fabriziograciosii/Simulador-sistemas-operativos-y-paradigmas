@@ -215,6 +215,49 @@ describe('Batería Exhaustiva de Pruebas AE2 - Simulador OS', () => {
             
             expect(enNuevos + enMemoria + enListos + enTerminados).toBe(4);
         });
+
+        describe('8. Simulación Oficial de la Cátedra (Planilla: CPU Round Robin)', () => {
+        test('Debe procesar el lote completo (A, B, C, D, E) y generar métricas finales', () => {
+            // recreamos el caso de prueba tal cual lo pidio el profe en el excel
+            const simulador = new Simulador(new GestorMemoria(1024, new BestFit()), new Procesador(), new RoundRobin(2));
+            
+            const procesoA = new Proceso(1, 200, 3); // entra tick 0
+            const procesoB = new Proceso(2, 300, 4); // entra tick 1
+            const procesoC = new Proceso(3, 100, 3); // entra tick 2
+            const procesoD = new Proceso(4, 250, 2); // entra tick 3
+            const procesoE = new Proceso(5, 100, 1); // entra tick 4
+
+            // simulamos que van llegando a medida que avanza el tiempo
+            simulador.agregarProceso(procesoA);
+            simulador.ejecutarReloj(); // TICK 0
+            
+            simulador.agregarProceso(procesoB);
+            simulador.ejecutarReloj(); // TICK 1
+
+            simulador.agregarProceso(procesoC);
+            simulador.ejecutarReloj(); // TICK 2
+            
+            // aca p1 ya agoto su quantum y lo expulsa
+            expect(simulador.getCambiosDeContexto()).toBe(1);
+
+            simulador.agregarProceso(procesoD);
+            simulador.ejecutarReloj(); // TICK 3
+
+            simulador.agregarProceso(procesoE);
+            simulador.ejecutarReloj(); // TICK 4
+
+            // adelantamos el tiempo hasta que terminen todos los procesos
+            for (let i = 5; i <= 20; i++) {
+                simulador.ejecutarReloj();
+            }
+
+            // comprobacion final de los requerimientos de la catedra
+            expect(simulador.getProcesosTerminados().length).toBe(5); // terminaron todos
+            expect(simulador.getProcesosListos().length).toBe(0); // cola vacia
+            expect(simulador.getFragmentacionExterna()).toBe(0); // ram limpia y compactada
+            expect(simulador.getPorcentajeUsoCPU()).toBeGreaterThan(50); // cpu trabajando
+        });
+    });
     });
 
 });
